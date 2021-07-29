@@ -1,5 +1,5 @@
 #pragma once
-#include "PPDef.h"
+#include "../PPDef.h"
 #include <tchar.h>
 
 class CPPString
