@@ -14,21 +14,21 @@ CPPString::~CPPString()
 
 CPPString& CPPString::operator=(const wchar_t* wstrValue)
 {
-	uint uLen = wcslen(wstrValue);
+	unsigned int uLen = wcslen(wstrValue);
 	__CopyMemory(wstrValue, uLen);
 	return *this;
 }
 
 CPPString& CPPString::operator=(CPPString& wstrValue)
 {
-	uint uLen = wstrValue.GetLength();
+	unsigned int uLen = wstrValue.GetLength();
 	__CopyMemory(wstrValue.__GetWStrValue(), uLen);
 	return *this;
 }
 
 CPPString& CPPString::operator=(wchar_t wstrValue)
 {
-	uint uLen = 1;
+	unsigned int uLen = 1;
 	__CopyMemory(&wstrValue, uLen);
 	return *this;
 }
@@ -52,7 +52,7 @@ CPPString& CPPString::operator+=(CPPString& wstrValue)
 	wchar_t* wstrTemp = new wchar_t[m_uLength + 1];
 	wmemcpy(wstrTemp, m_wstrValue, m_uLength);
 	wstrTemp[m_uLength] = '\0';
-	uint uLen = m_uLength;
+	unsigned int uLen = m_uLength;
 	__CopyMemory(wstrTemp, wstrValue.GetLength() + m_uLength);
 	__CopyMemoryOfs(wstrValue.__GetWStrValue(), uLen, wstrValue.GetLength());
 	delete [] wstrTemp;
@@ -64,7 +64,7 @@ CPPString& CPPString::operator+=(const wchar_t* wstrValue)
 	wchar_t* wstrTemp = new wchar_t[m_uLength + 1];
 	wmemcpy(wstrTemp, m_wstrValue, m_uLength);
 	wstrTemp[m_uLength] = '\0';
-	uint uLen = m_uLength;
+	unsigned int uLen = m_uLength;
 	__CopyMemory(wstrTemp, wcslen(wstrValue) + m_uLength);
 	__CopyMemoryOfs(wstrValue, uLen, wcslen(wstrValue));
 	delete[] wstrTemp;
@@ -74,7 +74,7 @@ CPPString& CPPString::operator+=(const wchar_t* wstrValue)
 BOOL CPPString::__Compare(CPPString& wstr1, CPPString& wstr2)
 {
 	//仅负责比对相同长度的字符串
-	for (uint i = 0; i < wstr1.GetLength(); i++)
+	for (unsigned int i = 0; i < wstr1.GetLength(); i++)
 	{
 		if (wstr1.GetAt(i) != wstr2.GetAt(i))
 			return FALSE;
@@ -82,7 +82,7 @@ BOOL CPPString::__Compare(CPPString& wstr1, CPPString& wstr2)
 	return TRUE;
 }
 
-void CPPString::__CopyMemory(const wchar_t* pMemory, uint uLen)
+void CPPString::__CopyMemory(const wchar_t* pMemory, unsigned int uLen)
 {
 	delete[] m_wstrValue;
 	m_wstrValue = new wchar_t[uLen + 1];
@@ -91,7 +91,7 @@ void CPPString::__CopyMemory(const wchar_t* pMemory, uint uLen)
 	m_uLength = uLen;
 }
 
-void CPPString::__CopyMemoryOfs(const wchar_t* pMemory, uint uOffset, uint uLen)
+void CPPString::__CopyMemoryOfs(const wchar_t* pMemory, unsigned int uOffset, unsigned int uLen)
 {
 	wmemcpy(&m_wstrValue[uOffset], pMemory, uLen);
 	m_wstrValue[m_uLength] = '\0';
@@ -107,7 +107,7 @@ size_t CPPString::GetLength()
 	return m_uLength;
 }
 
-wchar_t CPPString::GetAt(uint uIndex)
+wchar_t CPPString::GetAt(unsigned int uIndex)
 {
 	ASSERT(uIndex < m_uLength);
 	return m_wstrValue[uIndex];

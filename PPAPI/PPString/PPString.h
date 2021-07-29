@@ -1,12 +1,12 @@
 #pragma once
-#include "../PPDef.h"
 #include <tchar.h>
+#include "../PPDef.h"
 
 class CPPString
 {
 private:
 	wchar_t* m_wstrValue;
-	uint m_uLength;
+	unsigned int m_uLength;
 
 public:
 	//构造与析构
@@ -23,8 +23,8 @@ public:
 
 private:
 	BOOL __Compare(CPPString& wstr1, CPPString& wstr2);
-	void __CopyMemory(const wchar_t* pMemory, uint uLen);
-	void __CopyMemoryOfs(const wchar_t* pMemory, uint uOffset, uint uLen);
+	void __CopyMemory(const wchar_t* pMemory, unsigned int uLen);
+	void __CopyMemoryOfs(const wchar_t* pMemory, unsigned int uOffset, unsigned int uLen);
 
 public:
 	//自用函数
@@ -32,7 +32,7 @@ public:
 
 public:
 	//通用函数
-	uint GetLength();
-	wchar_t GetAt(uint uIndex);
+	unsigned int GetLength();
+	wchar_t GetAt(unsigned int uIndex);
 	const wchar_t* GetString();
 };

@@ -15,8 +15,6 @@
 #define CrtDumpMemoryLeaks() 0;
 #endif
 
-#define TRUE 1;
-#define FALSE 0;
-
-typedef unsigned int uint;
-typedef long BOOL;
+#define TRUE 1
+#define FALSE 0
+typedef int BOOL;
