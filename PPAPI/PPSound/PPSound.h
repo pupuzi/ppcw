@@ -4,7 +4,7 @@
 #include "../PPString/PPString.h"
 #include "../PPObj/PPObj.h"
 
-class CPPSound : public CPPObj
+class CPPSound
 {
 private:
 	CPPString m_strName;
@@ -18,11 +18,14 @@ private:
 
 public:
 	CPPSound();
-	virtual ~CPPSound() {}
+	virtual ~CPPSound();
+
+private:
+	LPDIRECTSOUNDBUFFER Load(const wchar_t* strFilePath);
 
 public:
-	LPDIRECTSOUNDBUFFER  LoadSound(const wchar_t* strFilePath);
-
-	BOOL PlaySond(const wchar_t* strFilePath);
-	BOOL PlaySond(CPPString& strFilePath);
+	BOOL LoadSound(CPPString& strFilePath);
+	BOOL LoadSound(const wchar_t* strFilePath);
+	BOOL SetVolume(float uNum);
+	BOOL PlaySond();
 };

@@ -1,12 +1,24 @@
 #include "PPSound.h"
+#include <corecrt_math.h>
 
 CPPSound::CPPSound()
 {
-	DirectSoundCreate(NULL, &pDs, NULL);
-	pDs->SetCooperativeLevel(GetDesktopWindow(), DSSCL_PRIORITY);
+	pDs = nullptr;
+	pDSB = nullptr;
+
+	GUID oGuid;
+	GetDeviceID(&DSDEVID_DefaultPlayback, &oGuid);
+	DirectSoundCreate(&oGuid, &pDs, NULL);
+	pDs->SetCooperativeLevel(GetConsoleWindow(), DSSCL_NORMAL);
 }
 
-LPDIRECTSOUNDBUFFER  CPPSound::LoadSound(const wchar_t* strFilePath)
+CPPSound::~CPPSound()
+{
+	pDs->Release();
+	pDSB->Release();
+}
+
+LPDIRECTSOUNDBUFFER CPPSound::Load(const wchar_t* strFilePath)
 {
 	HMMIO hMmio;
 	MMRESULT mmResult;
@@ -43,7 +55,7 @@ LPDIRECTSOUNDBUFFER  CPPSound::LoadSound(const wchar_t* strFilePath)
 	memset(&desc, 0, sizeof(desc));
 	desc.dwSize = sizeof(desc);
 	desc.lpwfxFormat = &oFormat;
-	desc.dwFlags = DSBCAPS_STATIC;//static表示可多次播放，当然还可以指定其他的使用| 连接
+	desc.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME;//static表示可多次播放，当然还可以指定其他的使用| 连接
 	desc.dwBufferBytes = mmCkInfo.cksize;
 	HRESULT hRes = pDs->CreateSoundBuffer(&desc, &pTempBuf, NULL);
 	if (hRes != DS_OK)
@@ -63,13 +75,40 @@ LPDIRECTSOUNDBUFFER  CPPSound::LoadSound(const wchar_t* strFilePath)
 	return pTempBuf;
 }
 
-BOOL CPPSound::PlaySond(CPPString& strFilePath)
+BOOL CPPSound::LoadSound(CPPString& strFilePath)
 {
-	return PlaySond(strFilePath.GetString());
+	pDSB = Load(strFilePath.GetString());
+	if (!pDSB)
+		return FALSE;
+	return TRUE;
 }
 
-BOOL CPPSound::PlaySond(const wchar_t* strFilePath)
+BOOL CPPSound::LoadSound(const wchar_t* strFilePath)
 {
-	pDSB = LoadSound(strFilePath);
-	return pDSB->Play(0, 0, 1);
+	pDSB = Load(strFilePath);
+	if (!pDSB)
+		return FALSE;
+	return TRUE;
 }
+
+BOOL CPPSound::SetVolume(float uNum)
+{
+	if (uNum > 100)
+		return FALSE;
+	if (uNum == 0)
+	{
+		pDSB->SetVolume(-10000);
+		return TRUE;
+	}
+	else if (pDSB->SetVolume(2000.0 * log10(uNum / 100)) != S_OK)
+			return FALSE;
+	return TRUE;
+}
+
+BOOL CPPSound::PlaySond()
+{
+	if (pDSB->Play(0, 0, 1) != S_OK)
+		return FALSE;
+	return TRUE;
+}
+
