@@ -7,6 +7,20 @@ CPPString::CPPString()
 	m_wstrValue[0] = '\0';
 }
 
+CPPString::CPPString(const wchar_t* wstrValue)
+{
+	CPPString();
+	unsigned int uLen = wcslen(wstrValue);
+	__CopyMemory(wstrValue, uLen);
+}
+
+CPPString::CPPString(CPPString& wstrValue)
+{
+	CPPString();
+	unsigned int uLen = wstrValue.GetLength();
+	__CopyMemory(wstrValue.__GetWStrValue(), uLen);
+}
+
 CPPString::~CPPString()
 {
 	delete[] m_wstrValue;

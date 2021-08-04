@@ -11,6 +11,8 @@ private:
 public:
 	//构造与析构
 	CPPString();
+	CPPString(const wchar_t* wstrValue);
+	CPPString(CPPString& wstrValue);
 	virtual ~CPPString();
 
 	CPPString& operator=(const wchar_t* wstrValue);

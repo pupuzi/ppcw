@@ -13,19 +13,24 @@ private:
 	unsigned int m_uTotalTime;
 	unsigned int m_uCurrentTime;
 
-	LPDIRECTSOUND pDs;
-	LPDIRECTSOUNDBUFFER pDSB;
+	IGraphBuilder* m_pGraphBuilder;
+	IMediaControl* m_pMediaControl;
+	IMediaPosition* m_pMediaPosition ;
 
 public:
 	CPPSound();
 	virtual ~CPPSound();
 
 private:
-	LPDIRECTSOUNDBUFFER Load(const wchar_t* strFilePath);
+	BOOL Load(const wchar_t* strFilePath);
+	void ParseExtension(const wchar_t* strFilePath);
 
 public:
+	BOOL Init();
+	void Exit();
 	BOOL LoadSound(CPPString& strFilePath);
 	BOOL LoadSound(const wchar_t* strFilePath);
-	BOOL SetVolume(float uNum);
-	BOOL PlaySond();
+	BOOL PlaySound();
+	BOOL StopSound();
+	BOOL PauseSound();
 };

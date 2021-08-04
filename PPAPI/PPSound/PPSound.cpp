@@ -1,114 +1,86 @@
 #include "PPSound.h"
+#include "PPMp3.h"
 #include <corecrt_math.h>
 
 CPPSound::CPPSound()
 {
-	pDs = nullptr;
-	pDSB = nullptr;
+	m_uTotalTime = 0;
+	m_uCurrentTime = 0;
 
-	GUID oGuid;
-	GetDeviceID(&DSDEVID_DefaultPlayback, &oGuid);
-	DirectSoundCreate(&oGuid, &pDs, NULL);
-	pDs->SetCooperativeLevel(GetConsoleWindow(), DSSCL_NORMAL);
+	m_pGraphBuilder = NULL;
+	m_pMediaControl = NULL;
+	m_pMediaPosition = NULL;
 }
 
 CPPSound::~CPPSound()
 {
-	pDs->Release();
-	pDSB->Release();
+	m_pGraphBuilder->Release();
+	m_pMediaPosition->Release();
+	m_pMediaControl->Release();
 }
 
-LPDIRECTSOUNDBUFFER CPPSound::Load(const wchar_t* strFilePath)
+BOOL CPPSound::Init()
 {
-	HMMIO hMmio;
-	MMRESULT mmResult;
-	hMmio = mmioOpen(const_cast<wchar_t*>(strFilePath), NULL, MMIO_ALLOCBUF | MMIO_READ);
-	if (!hMmio)
-		return NULL;
+	if (CoInitialize(NULL) != S_OK)
+		return FALSE;
+	return TRUE;
+}
 
-	MMCKINFO mmCkRiff;//WAVE文件信息结构
-	mmCkRiff.fccType = mmioFOURCC('W', 'A', 'V', 'E');
-	mmResult = mmioDescend(hMmio, &mmCkRiff, NULL, MMIO_FINDRIFF);
-	if (mmResult != MMSYSERR_NOERROR)
-		return NULL;
+void CPPSound::Exit()
+{
+	CoUninitialize();
+}
 
-	MMCKINFO mmCkInfo;
-	mmCkInfo.ckid = mmioFOURCC('f', 'm', 't', ' ');//设定区块类型
-	mmResult = mmioDescend(hMmio, &mmCkInfo, &mmCkRiff, MMIO_FINDCHUNK);//此方法退出区块
-	if (mmResult != MMSYSERR_NOERROR)
-		return NULL;
+BOOL CPPSound::Load(const wchar_t* strFilePath)
+{
+	FILE* fp;
+	CPPSOUNDINFO oInfo;
+	_wfopen_s(&fp, strFilePath, _T("rb"));
+	CPPMP3_Parse(fp, &oInfo);
+	fclose(fp);
 
-	//读取音频格式
-	WAVEFORMATEX oFormat;
-	if (mmioRead(hMmio, (HPSTR)&oFormat, sizeof(oFormat)) == -1)
-		return NULL;
+	CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, IID_IGraphBuilder, (void**)&m_pGraphBuilder);
+	m_pGraphBuilder->QueryInterface(IID_IMediaControl, (void**)&m_pMediaControl);
+	m_pGraphBuilder->QueryInterface(IID_IMediaPosition, (void**)&m_pMediaPosition);
+	if (m_pGraphBuilder->RenderFile(strFilePath, NULL) != S_OK)
+		return FALSE;
+	return TRUE;
+}
 
-	mmioAscend(hMmio, &mmCkInfo, 0);
-	mmCkInfo.ckid = mmioFOURCC('d', 'a', 't', 'a');
-	mmResult = mmioDescend(hMmio, &mmCkInfo, &mmCkRiff, MMIO_FINDCHUNK);
-	if (mmResult != MMSYSERR_NOERROR)
-		return NULL;
+void CPPSound::ParseExtension(const wchar_t* strFilePath)
+{
 
-	//创建音频次缓冲区
-	LPDIRECTSOUNDBUFFER pTempBuf;
-	DSBUFFERDESC desc;//用以描述缓冲区结构
-	memset(&desc, 0, sizeof(desc));
-	desc.dwSize = sizeof(desc);
-	desc.lpwfxFormat = &oFormat;
-	desc.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME;//static表示可多次播放，当然还可以指定其他的使用| 连接
-	desc.dwBufferBytes = mmCkInfo.cksize;
-	HRESULT hRes = pDs->CreateSoundBuffer(&desc, &pTempBuf, NULL);
-	if (hRes != DS_OK)
-		return NULL;
-
-	// 从文件读取音频数据存入次缓冲区
-	LPVOID pAudio;
-	DWORD BytesAudio;
-	pTempBuf->Lock(0, mmCkInfo.cksize, &pAudio, &BytesAudio, NULL, NULL, NULL);
-	if (mmioRead(hMmio, (HPSTR)pAudio, BytesAudio) == -1)
-		return NULL;
-	pTempBuf->Unlock(pAudio, BytesAudio, NULL, NULL);
-
-	//关闭文件
-	mmioClose(hMmio, 0);
-
-	return pTempBuf;
 }
 
 BOOL CPPSound::LoadSound(CPPString& strFilePath)
 {
-	pDSB = Load(strFilePath.GetString());
-	if (!pDSB)
-		return FALSE;
-	return TRUE;
+	return Load(strFilePath.GetString());
 }
 
 BOOL CPPSound::LoadSound(const wchar_t* strFilePath)
 {
-	pDSB = Load(strFilePath);
-	if (!pDSB)
+	return Load(strFilePath);
+}
+
+BOOL CPPSound::PlaySound()
+{
+	if (m_pMediaControl->Run() != S_OK)
 		return FALSE;
 	return TRUE;
 }
 
-BOOL CPPSound::SetVolume(float uNum)
+BOOL CPPSound::StopSound()
 {
-	if (uNum > 100)
+	if (m_pMediaControl->Stop() != S_OK)
 		return FALSE;
-	if (uNum == 0)
-	{
-		pDSB->SetVolume(-10000);
-		return TRUE;
-	}
-	else if (pDSB->SetVolume(2000.0 * log10(uNum / 100)) != S_OK)
-			return FALSE;
 	return TRUE;
 }
 
-BOOL CPPSound::PlaySond()
+BOOL CPPSound::PauseSound()
 {
-	if (pDSB->Play(0, 0, 1) != S_OK)
+	if (m_pMediaControl->Pause() != S_OK)
 		return FALSE;
 	return TRUE;
 }
+
 
