@@ -1,0 +1,4 @@
+duilib编译自原版duilib:
+https://github.com/duilib/duilib.git
+编译的lib与dll属于unicode下的x86版本的debug与release
+加入工程后需要增加宏定义UILIB_STATIC
