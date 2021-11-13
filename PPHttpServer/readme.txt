@@ -1,0 +1,2 @@
+使用libevent通过设置自定义的POST、GET的CALLBACK来进行HTTP协议下的文件上传下载
+是一个可以进行一定控制的HTTP文件服务器
